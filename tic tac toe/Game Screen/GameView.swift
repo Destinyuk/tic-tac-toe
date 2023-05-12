@@ -25,6 +25,11 @@ struct GameView: View {
                 
                 Button(game.player2.name) {
                     game.player2.isCurrent = true
+                    if game.gameType == .cpu {
+                        Task {
+                            await game.CpuMove()
+                        }
+                    }
                 }
                 .buttonStyle(PlayerButtonStyle(isCurrent: game.player2.isCurrent))
             }
@@ -43,6 +48,16 @@ struct GameView: View {
                 HStack {
                     ForEach(6...8, id: \.self) { index in
                         SquareView(index: index)
+                    }
+                }
+            }
+            .overlay {
+                if game.isThinking {
+                    VStack {
+                        Text("Thinking of a move")
+                            .foregroundColor(Color(.systemBackground))
+                            .background(Rectangle().fill(Color.primary))
+                        ProgressView()
                     }
                 }
             }
