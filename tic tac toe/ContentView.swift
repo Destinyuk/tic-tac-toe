@@ -16,7 +16,7 @@ struct ContentView: View {
     
     @FocusState private var focus: Bool
     
-    
+    @EnvironmentObject var game: GameService
     
     var body: some View {
         
@@ -55,6 +55,7 @@ struct ContentView: View {
             
             if gameType != .peer {
                 Button("Start Game") {
+                    game.setupGame(gameType: gameType, player1Name: yourName, player2Name: opponentsName)
                     focus = false
                     startGame.toggle()
                 }
@@ -69,6 +70,9 @@ struct ContentView: View {
         }
         .padding()
         .navigationTitle("Tic tac toe")
+        .onAppear {
+            game.reset()
+        }
         .fullScreenCover(isPresented: $startGame) {
             GameView()
         }
@@ -79,5 +83,6 @@ struct ContentView: View {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
+            .environmentObject(GameService())
     }
 }
