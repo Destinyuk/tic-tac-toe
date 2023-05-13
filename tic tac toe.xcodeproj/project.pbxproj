@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5E2D6A602A0F393200025BC8 /* YourNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E2D6A5F2A0F393200025BC8 /* YourNameView.swift */; };
 		5EC0BE072A0C83F6005FEDC5 /* AppEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC0BE062A0C83F6005FEDC5 /* AppEntry.swift */; };
 		5EC0BE092A0C83F6005FEDC5 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC0BE082A0C83F6005FEDC5 /* ContentView.swift */; };
 		5EC0BE0B2A0C83F8005FEDC5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5EC0BE0A2A0C83F8005FEDC5 /* Assets.xcassets */; };
@@ -20,6 +21,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		5E2D6A5F2A0F393200025BC8 /* YourNameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YourNameView.swift; sourceTree = "<group>"; };
 		5EC0BE032A0C83F6005FEDC5 /* tic tac toe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "tic tac toe.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5EC0BE062A0C83F6005FEDC5 /* AppEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEntry.swift; sourceTree = "<group>"; };
 		5EC0BE082A0C83F6005FEDC5 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -64,6 +66,7 @@
 			isa = PBXGroup;
 			children = (
 				5EC0BE062A0C83F6005FEDC5 /* AppEntry.swift */,
+				5E2D6A5F2A0F393200025BC8 /* YourNameView.swift */,
 				5EC0BE1A2A0C9E63005FEDC5 /* Game Screen */,
 				5EC0BE142A0C8750005FEDC5 /* Model */,
 				5EC0BE172A0C95C5005FEDC5 /* Utilities */,
@@ -179,6 +182,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5E2D6A602A0F393200025BC8 /* YourNameView.swift in Sources */,
 				5EC0BE092A0C83F6005FEDC5 /* ContentView.swift in Sources */,
 				5EC0BE162A0C875D005FEDC5 /* GameModels.swift in Sources */,
 				5EC0BE072A0C83F6005FEDC5 /* AppEntry.swift in Sources */,
