@@ -10,7 +10,6 @@ import SwiftUI
 struct ContentView: View {
     
     @State private var gameType: GameType = .undetermined
-  //  @State private var yourName = ""
     @AppStorage("yourName") var yourName = ""
     @State private var opponentsName = ""
     @State private var startGame = false
