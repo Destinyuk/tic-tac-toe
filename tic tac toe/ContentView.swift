@@ -16,14 +16,18 @@ struct ContentView: View {
     @State private var changeName = false
     @State private var newName = ""
     
+    @StateObject var connectionManager: MPConnectionManager
     @FocusState private var focus: Bool
     
     @EnvironmentObject var game: GameService
     
     
-    init(yourNamne: String) {
+    init(yourName: String) {
         self.yourName = yourName
+        _connectionManager = StateObject(wrappedValue: MPConnectionManager(yourName: yourName))
     }
+    
+    
     var body: some View {
         
         VStack {
@@ -47,7 +51,8 @@ struct ContentView: View {
                 case .cpu:
                         EmptyView()
                 case .peer:
-                    EmptyView()
+                    MPPeersView(startGame: $startGame)
+                        .environmentObject(connectionManager)
                 case .undetermined:
                     EmptyView()
                 }
@@ -82,6 +87,7 @@ struct ContentView: View {
         }
         .fullScreenCover(isPresented: $startGame) {
             GameView()
+                .environmentObject(connectionManager)
         }
         .alert("Change Name", isPresented: $changeName, actions: {
             TextField("New Name", text: $newName)
@@ -99,7 +105,7 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(yourNamne: "Test")
+        ContentView(yourName: "Test")
             .environmentObject(GameService())
     }
 }

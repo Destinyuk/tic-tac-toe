@@ -1,18 +1,11 @@
-//
-//  MPConnectionManager.swift
-//  tic tac toe
-//
-//  Created by Ash on 16/05/2023.
-//
 
 import MultipeerConnectivity
 
 extension String {
-    static var serviceName = "XAndO"
+    static var serviceName = "TicTacToe"
 }
 
 class MPConnectionManager: NSObject, ObservableObject {
-    
     let serviceType = String.serviceName
     let session: MCSession
     let myPeerId: MCPeerID
@@ -20,19 +13,19 @@ class MPConnectionManager: NSObject, ObservableObject {
     let nearbyServiceBrowser: MCNearbyServiceBrowser
     var game: GameService?
     
-    func setup(game: GameService) {
+    func setup(game:GameService) {
         self.game = game
     }
     
-    @Published var avaliablePlayers = [MCPeerID]()
+    @Published var availablePeers = [MCPeerID]()
     @Published var receivedInvite: Bool = false
     @Published var receivedInviteFrom: MCPeerID?
-    @Published var invitationHandler: ((Bool, MCSession) -> Void)?
+    @Published var invitationHandler: ((Bool, MCSession?) -> Void)?
     @Published var paired: Bool = false
     
-    var isReadyToPlay: Bool = false {
+    var isAvailableToPlay: Bool = false {
         didSet {
-            if isReadyToPlay {
+            if isAvailableToPlay {
                 startAdvertising()
             } else {
                 stopAdvertising()
@@ -47,8 +40,8 @@ class MPConnectionManager: NSObject, ObservableObject {
         nearbyServiceBrowser = MCNearbyServiceBrowser(peer: myPeerId, serviceType: serviceType)
         super.init()
         session.delegate = self
-        nearbyServiceBrowser.delegate = self
         nearbyServiceAdvertiser.delegate = self
+        nearbyServiceBrowser.delegate = self
     }
     
     deinit {
@@ -70,7 +63,9 @@ class MPConnectionManager: NSObject, ObservableObject {
     
     func stopBrowsing() {
         nearbyServiceBrowser.stopBrowsingForPeers()
+        availablePeers.removeAll()
     }
+    
     func send(gameMove: MPGameMove) {
         if !session.connectedPeers.isEmpty {
             do {
@@ -85,23 +80,21 @@ class MPConnectionManager: NSObject, ObservableObject {
 }
 
 extension MPConnectionManager: MCNearbyServiceBrowserDelegate {
-    
     func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
         DispatchQueue.main.async {
-            if !self.avaliablePlayers.contains(peerID) {
-                self.avaliablePlayers.append(peerID)
+            if !self.availablePeers.contains(peerID) {
+                self.availablePeers.append(peerID)
             }
         }
     }
     
     func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
-        guard let index = avaliablePlayers.firstIndex(of: peerID) else { return }
+        guard let index = availablePeers.firstIndex(of: peerID) else { return }
         DispatchQueue.main.async {
-            self.avaliablePlayers.remove(at: index)
+            self.availablePeers.remove(at: index)
         }
     }
 }
-
 
 extension MPConnectionManager: MCNearbyServiceAdvertiserDelegate {
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
@@ -119,17 +112,17 @@ extension MPConnectionManager: MCSessionDelegate {
         case .notConnected:
             DispatchQueue.main.async {
                 self.paired = false
-                self.isReadyToPlay = true
+                self.isAvailableToPlay = true
             }
         case .connected:
             DispatchQueue.main.async {
                 self.paired = true
-                self.isReadyToPlay = false
+                self.isAvailableToPlay = false
             }
         default:
             DispatchQueue.main.async {
                 self.paired = false
-                self.isReadyToPlay = true
+                self.isAvailableToPlay = true
             }
         }
     }
@@ -139,16 +132,21 @@ extension MPConnectionManager: MCSessionDelegate {
             DispatchQueue.main.async {
                 switch gameMove.action {
                 case .start:
-                    break
-                case .end:
-                    self.session.disconnect()
-                    self.isReadyToPlay = true
-                case .reset:
-                    self.game?.reset()
+                    guard let playerName = gameMove.playerName else { return }
+                    if self.game?.player1.name == playerName {
+                        self.game?.player1.isCurrent = true
+                    } else {
+                        self.game?.player2.isCurrent = true
+                    }
                 case .move:
                     if let index = gameMove.index {
                         self.game?.makeMove(at: index)
                     }
+                case .reset:
+                    self.game?.reset()
+                case .end:
+                    self.session.disconnect()
+                    self.isAvailableToPlay = true
                 }
             }
         }

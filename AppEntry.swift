@@ -17,7 +17,7 @@ struct AppEntry: App {
                 YourNameView()
             } else {
                 
-                ContentView(yourNamne: yourName)
+                ContentView(yourName: yourName)
                     .environmentObject(game)
             }
         }

@@ -10,7 +10,7 @@ import SwiftUI
 struct GameView: View {
     @EnvironmentObject var game: GameService
     @Environment(\.dismiss) var dismiss
-    
+    @EnvironmentObject var connectionManager: MPConnectionManager
     var body: some View {
         VStack {
             if [game.player1.isCurrent, game.player2.isCurrent].allSatisfy({ $0 == false }) {
@@ -72,6 +72,9 @@ struct GameView: View {
                     }
                     Button("New Game") {
                         game.reset()
+                        if game.gameType == .peer {
+                            connectionManager.setup(game: game)
+                        }
                     }
                     .buttonStyle(.borderedProminent)
                 }
@@ -96,6 +99,7 @@ struct GameView_Previews: PreviewProvider {
     static var previews: some View {
         GameView()
             .environmentObject(GameService())
+            .environmentObject(MPConnectionManager(yourName: "testing"))
     }
 }
 
