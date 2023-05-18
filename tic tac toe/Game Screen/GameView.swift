@@ -9,29 +9,35 @@ import SwiftUI
 
 struct GameView: View {
     @EnvironmentObject var game: GameService
-    @Environment(\.dismiss) var dismiss
     @EnvironmentObject var connectionManager: MPConnectionManager
+    @Environment(\.dismiss) var dismiss
     var body: some View {
         VStack {
-            if [game.player1.isCurrent, game.player2.isCurrent].allSatisfy({ $0 == false }) {
+            if [game.player1.isCurrent, game.player2.isCurrent].allSatisfy{ $0 == false} {
                 Text("Select a player to start")
             }
             HStack {
                 Button(game.player1.name) {
                     game.player1.isCurrent = true
+                    if game.gameType == .peer {
+                        let gameMove = MPGameMove(action: .start, playerName: game.player1.name, index: nil)
+                        connectionManager.send(gameMove: gameMove)
+                    }
                 }
-                .buttonStyle(PlayerButtonStyle(isCurrent: game.player1.isCurrent))
-                
-                
+                .buttonStyle(PlayerButtonStyle(player: game.player1))
                 Button(game.player2.name) {
                     game.player2.isCurrent = true
                     if game.gameType == .cpu {
                         Task {
-                            await game.CpuMove()
+                            await game.deviceMove()
                         }
                     }
+                    if game.gameType == .peer {
+                        let gameMove = MPGameMove(action: .start, playerName: game.player2.name, index: nil)
+                        connectionManager.send(gameMove: gameMove)
+                    }
                 }
-                .buttonStyle(PlayerButtonStyle(isCurrent: game.player2.isCurrent))
+                .buttonStyle(PlayerButtonStyle(player: game.player2))
             }
             .disabled(game.gameStarted)
             VStack {
@@ -54,26 +60,29 @@ struct GameView: View {
             .overlay {
                 if game.isThinking {
                     VStack {
-                        Text("Thinking of a move")
+                        Text(" Thinking... ")
                             .foregroundColor(Color(.systemBackground))
                             .background(Rectangle().fill(Color.primary))
                         ProgressView()
                     }
                 }
             }
-            .disabled(game.boardDisabled)
-            VStack{
+            .disabled(game.boardDisabled ||
+                      game.gameType == .peer &&
+                      connectionManager.myPeerId.displayName != game.currentPlayer.name)
+            VStack {
                 if game.gameOver {
                     Text("Game Over")
                     if game.possibleMoves.isEmpty {
-                        Text("Draw, No More Moves")
+                        Text("Nobody wins")
                     } else {
-                        Text("\(game.currentPlayer.name) wins ")
+                        Text("\(game.currentPlayer.name) wins!")
                     }
                     Button("New Game") {
                         game.reset()
                         if game.gameType == .peer {
-                            connectionManager.setup(game: game)
+                            let gameMove = MPGameMove(action: .reset, playerName: nil, index: nil)
+                            connectionManager.send(gameMove: gameMove)
                         }
                     }
                     .buttonStyle(.borderedProminent)
@@ -86,11 +95,21 @@ struct GameView: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("End Game") {
                     dismiss()
+                    if game.gameType == .peer {
+                        let gameMove = MPGameMove(action: .end, playerName: nil, index: nil)
+                        connectionManager.send(gameMove: gameMove)
+                    }
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.bordered)
             }
         }
-        .navigationTitle("Tic tac toe")
+        .navigationTitle("Xs and Os")
+        .onAppear {
+            game.reset()
+            if game.gameType == .peer {
+                connectionManager.setup(game: game)
+            }
+        }
         .inNavigationStack()
     }
 }
@@ -99,18 +118,19 @@ struct GameView_Previews: PreviewProvider {
     static var previews: some View {
         GameView()
             .environmentObject(GameService())
-            .environmentObject(MPConnectionManager(yourName: "testing"))
+            .environmentObject(MPConnectionManager(yourName: "Sample"))
     }
 }
 
-
 struct PlayerButtonStyle: ButtonStyle {
-    let isCurrent: Bool
+    let player: Player
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .padding(8)
-            .background(RoundedRectangle(cornerRadius: 12)
-                .fill(isCurrent ? Color.blue : Color.gray))
+            .background(RoundedRectangle(cornerRadius: 10)
+                .fill(player.isCurrent ? Color.green : Color.gray)
+            )
             .foregroundColor(.white)
+        
     }
 }

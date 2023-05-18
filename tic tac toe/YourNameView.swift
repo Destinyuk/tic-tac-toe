@@ -10,20 +10,21 @@ import SwiftUI
 struct YourNameView: View {
     @AppStorage("yourName") var yourName = ""
     @State private var userName = ""
-    
     var body: some View {
         VStack {
-            Text("Please enter a name that will be associated to your device when looking for other players")
-            TextField("Your name", text: $userName)
+            Text("This is the name that will be associated with this device.")
+            TextField("Your Name", text: $userName)
                 .textFieldStyle(.roundedBorder)
             Button("Set") {
                 yourName = userName
             }
             .buttonStyle(.borderedProminent)
             .disabled(userName.isEmpty)
+            Image("LaunchScreen")
+            Spacer()
         }
         .padding()
-        .navigationTitle("Tic tae toe")
+        .navigationTitle("Xs and Os")
         .inNavigationStack()
     }
 }

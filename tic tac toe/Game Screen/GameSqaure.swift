@@ -18,6 +18,7 @@ struct GameSquare {
             return Image("none")
         }
     }
+    
     static var reset: [GameSquare] {
         var squares = [GameSquare]()
         for index in 1...9 {

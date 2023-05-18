@@ -9,17 +9,14 @@ import SwiftUI
 
 @MainActor
 class GameService: ObservableObject {
-    
     @Published var player1 = Player(gamePiece: .x, name: "Player 1")
     @Published var player2 = Player(gamePiece: .o, name: "Player 2")
     @Published var possibleMoves = Move.all
     @Published var gameOver = false
     @Published var gameBoard = GameSquare.reset
-    
     @Published var isThinking = false
     
     var gameType = GameType.single
-    
     
     var currentPlayer: Player {
         if player1.isCurrent {
@@ -30,11 +27,11 @@ class GameService: ObservableObject {
     }
     
     var gameStarted: Bool {
-        player1.isCurrent || player2.isCurrent || isThinking
+        player1.isCurrent || player2.isCurrent
     }
     
     var boardDisabled: Bool {
-        gameOver || !gameStarted
+        gameOver || !gameStarted || isThinking
     }
     
     func setupGame(gameType: GameType, player1Name: String, player2Name: String) {
@@ -52,7 +49,6 @@ class GameService: ObservableObject {
         }
         player1.name = player1Name
     }
-    
     
     func reset() {
         player1.isCurrent = false
@@ -74,13 +70,13 @@ class GameService: ObservableObject {
         }
     }
     
-    func checkWinner() {
+    func checkIfWinner() {
         if player1.isWinner || player2.isWinner {
             gameOver = true
         }
     }
     
-    func toggleMoves() {
+    func toggleCurrent() {
         player1.isCurrent.toggle()
         player2.isCurrent.toggle()
     }
@@ -90,15 +86,15 @@ class GameService: ObservableObject {
             withAnimation {
                 updateMoves(index: index)
             }
-            checkWinner()
+            checkIfWinner()
             if !gameOver {
-                if let matchingIndex = possibleMoves.firstIndex(where: {$0 == (index + 1) } ){
+                if let matchingIndex = possibleMoves.firstIndex(where: {$0 == (index + 1)}) {
                     possibleMoves.remove(at: matchingIndex)
                 }
-                toggleMoves()
+                toggleCurrent()
                 if gameType == .cpu && currentPlayer.name == player2.name {
                     Task {
-                        await CpuMove()
+                        await deviceMove()
                     }
                 }
             }
@@ -107,9 +103,10 @@ class GameService: ObservableObject {
             }
         }
     }
-    func CpuMove() async {
+    
+    func deviceMove() async {
         isThinking.toggle()
-        try?  await Task.sleep(nanoseconds: 100_000_000_0)
+        try? await Task.sleep(nanoseconds: 1_000_000_000)
         if let move = possibleMoves.randomElement() {
             if let matchingIndex = Move.all.firstIndex(where: {$0 == move}) {
                 makeMove(at: matchingIndex)

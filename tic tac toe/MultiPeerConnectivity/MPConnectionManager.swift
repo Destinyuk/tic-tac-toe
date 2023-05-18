@@ -2,7 +2,7 @@
 import MultipeerConnectivity
 
 extension String {
-    static var serviceName = "TicTacToe"
+    static var serviceName = "XAndO"
 }
 
 class MPConnectionManager: NSObject, ObservableObject {
